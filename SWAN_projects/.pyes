@@ -1,0 +1,69 @@
+# coding: utf-8 <img src="http://oproject.org/tiki-download_file.php?fileId=8&display&x=450&y=128"> <img 
+# src="http://files.oproject.org/tmvalogo.png" height="50%" width="50%">
+#
+# # TMVA Variable Importance Example
+#
+# Example of finding the importance of the input variables by training and test the classifier using various combination of 
+# the input variables In[1]:
+import ROOT from ROOT import TMVA
+# ### Enable JS visualization
+# To use new interactive features in notebook we have to enable a module called JsMVA. This can be done by using ipython 
+# magic: %jsmva. In[2]:
+from IPython.core.extensions import ExtensionManager ExtensionManager(get_ipython()).load_extension("JsMVA.JsMVAMagic")
+# In[3]:
+get_ipython().magic('jsmva on')
+# ### Input Data File
+# In[4]:
+inputFile = ROOT.TFile("Higgs_data_small.root")
+# In[5]:
+inputFile.ls()
+# ## Declare DataLoader
+#
+# First we need to declare a DataLoader and add the variables (passing the variable names used in the test and train trees 
+# in input dataset). To add variable names to DataLoader we use the AddVariable function. Arguments of this function:
+#
+# 1. String containing the variable name. Using ":=" we can add definition too.
+#
+# 2. String (label to variable, if not present the variable name will be used) or character (defining the type of data 
+# points)
+#
+# 3. If we have label for variable, the data point type still can be passed as third argument
+#
+# Example:
+#
+# loader.AddVariable( "myvar1 := var1+var2", 'F' )
+#
+# In[6]:
+loader = TMVA.DataLoader("dataset");
+#add variables
+loader.AddVariable("m_jj") loader.AddVariable("m_jjj") loader.AddVariable("m_lv") loader.AddVariable("m_jlv") 
+loader.AddVariable("m_bb") loader.AddVariable("m_wbb") loader.AddVariable("m_wwbb") ROOT.TMVA.gConfig().SetDrawProgressBar( 
+False);
+# ## Setup Dataset(s)
+#
+# To pass the signal and background trees to DataLoader we use the AddSignalTree and AddBackgroundTree functions, and we set 
+# up the corresponding DataLoader using the *PrepareTrainingAndTestTree* function. In[7]:
+mycuts = ROOT.TCut() mycutb = ROOT.TCut() tsignal = inputFile.sig_tree tbackground = inputFile.bkg_tree loader.AddSignalTree 
+(tsignal, 1.0) #signal weight = 1 loader.AddBackgroundTree(tbackground, 1.0); #background weight = 1 
+loader.PrepareTrainingAndTestTree(mycuts, mycutb,
+                                  "nTrain_Signal=1000:nTrain_Background=1000:nTest_Signal=500:nTest_Background=500:SplitMode=Random:NormMode=NumEvents:!V" 
+)
+#loader.PrepareTrainingAndTestTree(SigCut=mycuts, BkgCut=mycutb,
+#                    nTrain_Signal=500, nTrain_Background=500, nTest_Signal=500, nTest_Background=500, SplitMode="Random", 
+#                    NormMode="NumEvents", V=False)
+# ## Variable Importance
+# In[8]:
+vi = TMVA.VariableImportance(loader)
+# In[9]:
+vi.BookMethod(TMVA.Types.kBDT, "BDT", 
+"V:NTrees=850:MinNodeSize=2.5%:MaxDepth=3:BoostType=AdaBoost:AdaBoostBeta=0.5:UseBaggedBoost:BaggedSampleFraction=0.5:SeparationType=GiniIndex:nCuts=20" 
+)
+# In[10]:
+tw = ROOT.TStopwatch(); tw.Start()
+#vi.SetType(TMVA.kRandom)
+vi.SetType(TMVA.kShort) vi.Evaluate() tw.Print()
+# In[11]:
+get_ipython().magic('jsroot on')
+# In[12]:
+results=vi.GetResults() results.Print() results.Draw() ROOT.gPad.Draw()
+# In[ ]:

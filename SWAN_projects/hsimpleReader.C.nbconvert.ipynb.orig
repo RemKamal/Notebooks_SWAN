@@ -1,0 +1,205 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Hsimple Reader\n",
+    "TTreeReader simplest example.\n",
+    "\n",
+    "Read data from hsimple.root (written by hsimple.C)\n",
+    "\n",
+    "\n",
+    "\n",
+    "\n",
+    "**Author:** Anders Eie, 2013  \n",
+    "<i><small>This notebook tutorial was automatically generated with <a href= \"https://github.com/root-project/root/blob/master/documentation/doxygen/converttonotebook.py\">ROOTBOOK-izer (Beta)</a> from the macro found in the ROOT repository  on Tuesday, November 21, 2017 at 09:38 AM.</small></i>"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "%%cpp -d\n",
+    "#include \"TFile.h\"\n",
+    "#include \"TH1F.h\"\n",
+    "#include \"TTreeReader.h\"\n",
+    "#include \"TTreeReaderValue.h\""
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Create a histogram for the values we read."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "auto myHist = new TH1F(\"h1\",\"ntuple\",100,-4,4);"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Open the file containing the tree."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "auto myFile = TFile::Open(\"hsimple.root\");\n",
+    "if (!myFile || myFile->IsZombie()) {\n",
+    "   return;\n",
+    "}"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Create a ttreereader for the tree, for instance by passing the\n",
+    " TTree's name and the TDirectory / TFile it is in."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "TTreeReader myReader(\"ntuple\", myFile);"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "The branch \"px\" contains floats; access them as mypx."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "TTreeReaderValue<Float_t> myPx(myReader, \"px\");"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "The branch \"py\" contains floats, too; access those as mypy."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "TTreeReaderValue<Float_t> myPy(myReader, \"py\");"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Loop over all entries of the ttree or tchain."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "Info in <TCanvas::MakeDefCanvas>:  created default TCanvas with name c1\n"
+     ]
+    }
+   ],
+   "source": [
+    "while (myReader.Next()) {\n",
+    "   // Just access the data as if myPx and myPy were iterators (note the '*'\n",
+    "   // in front of them):\n",
+    "   myHist->Fill(*myPx + *myPy);\n",
+    "}\n",
+    "\n",
+    "myHist->Draw();"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Draw all canvases "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "image/png": "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\niO9italxMakAAAAASUVORK5CYII=\n",
+      "text/plain": [
+       "<IPython.core.display.Image object>"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "gROOT->GetListOfCanvases()->Draw()"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "ROOT C++",
+   "language": "c++",
+   "name": "root"
+  },
+  "language_info": {
+   "codemirror_mode": "text/x-c++src",
+   "file_extension": ".C",
+   "mimetype": " text/x-c++src",
+   "name": "c++"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 1
+}

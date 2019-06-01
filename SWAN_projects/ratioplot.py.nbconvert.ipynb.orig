@@ -1,0 +1,230 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Ratioplot\n",
+    "Display two histograms and their ratio.\n",
+    "\n",
+    "This program illustrates how to plot two histograms and their\n",
+    "ratio on the same canvas. Original macro by Olivier Couet.\n",
+    "\n",
+    "\n",
+    "\n",
+    "\n",
+    "**Author:** Michael Moran  \n",
+    "<i><small>This notebook tutorial was automatically generated with <a href= \"https://github.com/root-mirror/root/blob/master/documentation/doxygen/converttonotebook.py\">ROOTBOOK-izer (Beta)</a> from the macro found in the ROOT repository  on Saturday, February 04, 2017 at 12:17 AM.</small></i>"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "from ROOT import TCanvas, TColor, TGaxis, TH1F, TPad\n",
+    "from ROOT import kBlack, kBlue, kRed\n",
+    "\n",
+    "\n",
+    "def createH1():\n",
+    "    h1 = TH1F(\"h1\", (\"Two gaussian plots and their ratio; x title; h1 and h2\"\n",
+    "                \" histograms\"), 100, -5, 5)\n",
+    "    h1.SetLineColor(kBlue+1)\n",
+    "    h1.SetLineWidth(2)\n",
+    "    h1.FillRandom(\"gaus\")\n",
+    "    h1.GetYaxis().SetTitleSize(20)\n",
+    "    h1.GetYaxis().SetTitleFont(43)\n",
+    "    h1.GetYaxis().SetTitleOffset(1.55)\n",
+    "    h1.SetStats(0)\n",
+    "    return h1\n",
+    "\n",
+    "\n",
+    "def createH2():\n",
+    "    h2 = TH1F(\"h2\", \"h2\", 100, -5, 5)\n",
+    "    h2.FillRandom(\"gaus\")\n",
+    "    h2.SetLineColor(kRed)\n",
+    "    h2.SetLineWidth(2)\n",
+    "    return h2\n",
+    "\n",
+    "\n",
+    "def createRatio(h1, h2):\n",
+    "    h3 = h1.Clone(\"h3\")\n",
+    "    h3.SetLineColor(kBlack)\n",
+    "    h3.SetMarkerStyle(21)\n",
+    "    h3.SetTitle(\"\")\n",
+    "    h3.SetMinimum(0.8)\n",
+    "    h3.SetMaximum(1.35)\n",
+    "    # Set up plot for markers and errors\n",
+    "    h3.Sumw2()\n",
+    "    h3.SetStats(0)\n",
+    "    h3.Divide(h2)\n",
+    "\n",
+    "    # Adjust y-axis settings\n",
+    "    y = h3.GetYaxis()\n",
+    "    y.SetTitle(\"ratio h1/h2 \")\n",
+    "    y.SetNdivisions(505)\n",
+    "    y.SetTitleSize(20)\n",
+    "    y.SetTitleFont(43)\n",
+    "    y.SetTitleOffset(1.55)\n",
+    "    y.SetLabelFont(43)\n",
+    "    y.SetLabelSize(15)\n",
+    "\n",
+    "    # Adjust x-axis settings\n",
+    "    x = h3.GetXaxis()\n",
+    "    x.SetTitleSize(20)\n",
+    "    x.SetTitleFont(43)\n",
+    "    x.SetTitleOffset(4.0)\n",
+    "    x.SetLabelFont(43)\n",
+    "    x.SetLabelSize(15)\n",
+    "\n",
+    "    return h3\n",
+    "\n",
+    "\n",
+    "def createCanvasPads():\n",
+    "    c = TCanvas(\"c\", \"canvas\", 800, 800)\n",
+    "    # Upper histogram plot is pad1\n",
+    "    pad1 = TPad(\"pad1\", \"pad1\", 0, 0.3, 1, 1.0)\n",
+    "    pad1.SetBottomMargin(0)  # joins upper and lower plot\n",
+    "    pad1.SetGridx()\n",
+    "    pad1.Draw()\n",
+    "    # Lower ratio plot is pad2\n",
+    "    c.cd()  # returns to main canvas before defining pad2\n",
+    "    pad2 = TPad(\"pad2\", \"pad2\", 0, 0.05, 1, 0.3)\n",
+    "    pad2.SetTopMargin(0)  # joins upper and lower plot\n",
+    "    pad2.SetBottomMargin(0.2)\n",
+    "    pad2.SetGridx()\n",
+    "    pad2.Draw()\n",
+    "\n",
+    "    return c, pad1, pad2"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "create required parts"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "h1 = createH1()\n",
+    "h2 = createH2()\n",
+    "h3 = createRatio(h1, h2)\n",
+    "c, pad1, pad2 = createCanvasPads()\n",
+    "print 'done'"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "draw everything"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "pad1.cd()\n",
+    "h1.Draw()\n",
+    "h2.Draw(\"same\")\n",
+    "print 'done again'"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "to avoid clipping the bottom zero, redraw a small axis"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "h1.GetYaxis().SetLabelSize(0.0)\n",
+    "axis = TGaxis(-5, 20, -5, 220, 20, 220, 510, \"\")\n",
+    "axis.SetLabelFont(33)\n",
+    "axis.SetLabelSize(11)\n",
+    "axis.Draw()\n",
+    "pad2.cd()\n",
+    "h3.Draw(\"ep\")\n",
+    "print 'done again'"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "To hold window open when running from command line\n",
+    " text = raw_input()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Draw all canvases "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "from ROOT import gROOT \n",
+    "gROOT.GetListOfCanvases().Draw()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 2",
+   "language": "python",
+   "name": "python2"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 2
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython2",
+   "version": "2.7.13"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 1
+}
